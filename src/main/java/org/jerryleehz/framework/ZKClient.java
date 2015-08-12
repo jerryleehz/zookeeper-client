@@ -9,6 +9,7 @@ import org.jerryleehz.framework.exception.ZKException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.InvalidPathException;
 import java.util.List;
 
 /**
@@ -25,9 +26,9 @@ public class ZKClient {
 
     public void createChild(String path) throws ZKException {
         if (!path.startsWith("/")) {
-            throw new ZKException("path must start with /");
+            throw new InvalidPathException(path, "path must start with /", 0);
         } else if (!path.equals("/") && path.endsWith("/")) {
-            throw new ZKException("path must not end with /");
+            path = path.substring(0, path.length() - 1);
         }
 
         String[] substrs = path.split("/");
@@ -41,7 +42,7 @@ public class ZKClient {
                 curPath += substrs[i];
                 if (!exists(curPath)) {
                     try {
-                        zooKeeper.create(curPath, null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+                        zooKeeper.create(curPath, null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
                     } catch (KeeperException e) {
                         e.printStackTrace();
                         throw new ZKException(e);
